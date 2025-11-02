@@ -20,8 +20,7 @@ struct SessionsApp: App {
         Purchases.logLevel = .debug
         Purchases.configure(withAPIKey: "test_XuVymhSmFuWhMzaripgyhEZBhut")
         #else
-        Purchases.logLevel = .debug
-        Purchases.configure(withAPIKey: "test_XuVymhSmFuWhMzaripgyhEZBhut")
+        Purchases.configure(withAPIKey: "appl_sZlrdCheJelinBWvtihakkDDaiN")
         #endif
 
         let isPremiumEnabled = false
