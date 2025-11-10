@@ -1,7 +1,13 @@
 import SwiftUI
+import Observation
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    let subscriptionStatusProvider: SubscriptionStatusProviding
+
+    init(subscriptionStatusProvider: SubscriptionStatusProviding) {
+        self.subscriptionStatusProvider = subscriptionStatusProvider
+    }
 
     var body: some View {
         NavigationStack {
@@ -15,6 +21,12 @@ struct SettingsView: View {
                     SettingsDetailLink(title: "Help Center", systemImage: "questionmark.circle")
                     SettingsDetailLink(title: "Contact Us", systemImage: "envelope")
                 }
+
+                #if DEBUG || DEVELOPMENT
+                Section("Debug") {
+                    LabeledContent("Subscription Status", value: subscriptionStatusText(subscriptionStatusProvider.status))
+                }
+                #endif
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
@@ -25,6 +37,17 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func subscriptionStatusText(_ status: SubscriptionStatus) -> String {
+        switch status {
+        case .unknown:
+            return "Unknown"
+        case .inactive:
+            return "Not Subscribed"
+        case .active:
+            return "Subscribed"
         }
     }
 }
@@ -56,5 +79,19 @@ private struct SettingsDetailLink: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(subscriptionStatusProvider: PreviewSubscriptionStatusProvider(status: .active(expirationDate: nil)))
+}
+
+@MainActor
+@Observable
+final class PreviewSubscriptionStatusProvider: SubscriptionStatusProviding {
+    var status: SubscriptionStatus
+
+    init(status: SubscriptionStatus) {
+        self.status = status
+    }
+
+    var isSubscribed: Bool { status.isSubscribed }
+
+    func refreshStatus() async {}
 }

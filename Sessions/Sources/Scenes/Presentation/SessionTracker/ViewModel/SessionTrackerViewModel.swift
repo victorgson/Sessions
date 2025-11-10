@@ -9,6 +9,7 @@ final class SessionTrackerViewModel {
     let trackerDispatcher: TrackerDispatcher
     let hapticBox: HapticBox
     let liveActivityController: any SessionLiveActivityControlling
+    let subscriptionStatusProvider: any SubscriptionStatusProviding
 
     var objectives: [Objective]
     var activities: [Activity]
@@ -28,12 +29,14 @@ final class SessionTrackerViewModel {
         useCases: SessionTrackerUseCases,
         trackerDispatcher: TrackerDispatcher,
         hapticBox: HapticBox,
-        liveActivityController: SessionLiveActivityControlling
+        liveActivityController: SessionLiveActivityControlling,
+        subscriptionStatusProvider: any SubscriptionStatusProviding
     ) {
         self.useCases = useCases
         self.trackerDispatcher = trackerDispatcher
         self.hapticBox = hapticBox
         self.liveActivityController = liveActivityController
+        self.subscriptionStatusProvider = subscriptionStatusProvider
         self.objectives = []
         self.activities = []
 

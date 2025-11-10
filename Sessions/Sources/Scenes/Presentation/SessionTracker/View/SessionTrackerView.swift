@@ -105,12 +105,15 @@ struct SessionTrackerView: View {
                 }
             }
         }
-        .paywallIfNeeded()
+        .paywallIfNeeded(
+            onPurchaseCompleted: { _ in refreshSubscriptionStatus() },
+            onRestoreCompleted: { _ in refreshSubscriptionStatus() }
+        )
         .onAppear {
             viewModel.trackPageView()
         }
         .sheet(isPresented: $isShowingSettings) {
-            SettingsView()
+            SettingsView(subscriptionStatusProvider: viewModel.subscriptionStatusProvider)
         }
         .sheet(isPresented: Binding(
             get: { bindableViewModel.activityDraft != nil },
@@ -258,6 +261,12 @@ struct SessionTrackerView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter.string(from: day)
+    }
+
+    private func refreshSubscriptionStatus() {
+        Task {
+            await viewModel.subscriptionStatusProvider.refreshStatus()
+        }
     }
 }
 

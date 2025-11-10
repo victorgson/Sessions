@@ -6,8 +6,11 @@ final class PersistenceController {
     let mode: PersistenceMode
     let container: NSPersistentContainer
 
-    init(isPremiumEnabled: Bool, useInMemoryStore: Bool = false) {
-        // In production, wire `isPremiumEnabled` to the subscription state (RevenueCat / StoreKit).
+    init(
+        subscriptionStatusProvider: any SubscriptionStatusProviding,
+        useInMemoryStore: Bool = false
+    ) {
+        let isPremiumEnabled = subscriptionStatusProvider.isSubscribed
         let model = Self.makeModel()
         mode = isPremiumEnabled ? .cloud : .local
         container = Self.makeContainer(
