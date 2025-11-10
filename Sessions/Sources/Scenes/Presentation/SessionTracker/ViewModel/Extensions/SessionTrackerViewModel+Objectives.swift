@@ -64,7 +64,7 @@ private extension SessionTrackerViewModel {
         objectives[index] = updated
 
         do {
-            try await useCases.upsertObjective.execute(updated)
+            try await upsertObjectiveUseCase.execute(updated)
         } catch {
             assertionFailure("Failed to update objective: \(error)")
         }
@@ -72,13 +72,13 @@ private extension SessionTrackerViewModel {
 
     func createObjective(from submission: ObjectiveFormSubmission) async {
         do {
-            _ = try await useCases.createObjective.execute(
+            _ = try await createObjectiveUseCase.execute(
                 title: submission.title,
                 colorHex: submission.colorHex,
                 endDate: submission.endDate,
                 keyResults: submission.keyResults
             )
-            objectives = try await useCases.loadObjectives.execute()
+            objectives = try await loadObjectivesUseCase.execute()
         } catch {
             assertionFailure("Failed to create objective: \(error)")
         }
@@ -86,9 +86,9 @@ private extension SessionTrackerViewModel {
 
     func deleteObjectiveAsync(id: UUID) async {
         do {
-            try await useCases.removeObjective.execute(id)
-            objectives = try await useCases.loadObjectives.execute()
-            activities = try await useCases.loadActivities.execute()
+            try await removeObjectiveUseCase.execute(id)
+            objectives = try await loadObjectivesUseCase.execute()
+            activities = try await loadActivitiesUseCase.execute()
         } catch {
             assertionFailure("Failed to delete objective: \(error)")
         }

@@ -143,12 +143,17 @@ private extension SessionTrackerViewModel {
         }
 
         do {
-            activities = try await useCases.loadActivities.execute()
+            activities = try await loadActivitiesUseCase.execute()
         } catch {
             assertionFailure("Failed to refresh activities: \(error)")
         }
 
         activityDraft = nil
+        promptAppStoreRatingUseCase.execute(
+            totalSessionsCompleted: activities.count,
+            didCloseLinkSheet: true,
+            isEditingDraft: draft.isEditing
+        )
         hapticBox.triggerNotification(DefaultHapticBox.Notification.success)
     }
 
@@ -167,7 +172,7 @@ private extension SessionTrackerViewModel {
         draft: ActivityDraft
     ) async {
         do {
-            try await useCases.updateActivity.execute(activity)
+            try await updateActivityUseCase.execute(activity)
         } catch {
             assertionFailure("Failed to update activity: \(error)")
         }
@@ -184,7 +189,7 @@ private extension SessionTrackerViewModel {
 
     func persistNewActivity(_ activity: Activity, draft: ActivityDraft) async {
         do {
-            try await useCases.recordActivity.execute(activity)
+            try await recordActivityUseCase.execute(activity)
         } catch {
             assertionFailure("Failed to record activity: \(error)")
         }
@@ -221,7 +226,7 @@ private extension SessionTrackerViewModel {
         objectives[index] = objective
         Task {
             do {
-                try await useCases.upsertObjective.execute(objective)
+                try await upsertObjectiveUseCase.execute(objective)
             } catch {
                 assertionFailure("Failed to persist objective mutation: \(error)")
             }

@@ -5,7 +5,15 @@ import Tracking
 @MainActor
 @Observable
 final class SessionTrackerViewModel {
-    let useCases: SessionTrackerUseCases
+    let loadObjectivesUseCase: any LoadObjectivesUseCase
+    let loadActivitiesUseCase: any LoadActivitiesUseCase
+    let upsertObjectiveUseCase: any UpsertObjectiveUseCase
+    let createObjectiveUseCase: any CreateObjectiveUseCase
+    let removeObjectiveUseCase: any RemoveObjectiveUseCase
+    let recordActivityUseCase: any RecordActivityUseCase
+    let updateActivityUseCase: any UpdateActivityUseCase
+    let removeActivityUseCase: any RemoveActivityUseCase
+    let promptAppStoreRatingUseCase: any PromptAppStoreRatingUseCase
     let trackerDispatcher: TrackerDispatcher
     let hapticBox: HapticBox
     let liveActivityController: any SessionLiveActivityControlling
@@ -26,13 +34,29 @@ final class SessionTrackerViewModel {
     }
 
     init(
-        useCases: SessionTrackerUseCases,
+        loadObjectivesUseCase: any LoadObjectivesUseCase,
+        loadActivitiesUseCase: any LoadActivitiesUseCase,
+        upsertObjectiveUseCase: any UpsertObjectiveUseCase,
+        createObjectiveUseCase: any CreateObjectiveUseCase,
+        removeObjectiveUseCase: any RemoveObjectiveUseCase,
+        recordActivityUseCase: any RecordActivityUseCase,
+        updateActivityUseCase: any UpdateActivityUseCase,
+        removeActivityUseCase: any RemoveActivityUseCase,
+        promptAppStoreRatingUseCase: any PromptAppStoreRatingUseCase,
         trackerDispatcher: TrackerDispatcher,
         hapticBox: HapticBox,
         liveActivityController: SessionLiveActivityControlling,
         subscriptionStatusProvider: any SubscriptionStatusProviding
     ) {
-        self.useCases = useCases
+        self.loadObjectivesUseCase = loadObjectivesUseCase
+        self.loadActivitiesUseCase = loadActivitiesUseCase
+        self.upsertObjectiveUseCase = upsertObjectiveUseCase
+        self.createObjectiveUseCase = createObjectiveUseCase
+        self.removeObjectiveUseCase = removeObjectiveUseCase
+        self.recordActivityUseCase = recordActivityUseCase
+        self.updateActivityUseCase = updateActivityUseCase
+        self.removeActivityUseCase = removeActivityUseCase
+        self.promptAppStoreRatingUseCase = promptAppStoreRatingUseCase
         self.trackerDispatcher = trackerDispatcher
         self.hapticBox = hapticBox
         self.liveActivityController = liveActivityController
@@ -65,7 +89,7 @@ final class SessionTrackerViewModel {
         objectives[index] = objective
         Task {
             do {
-                try await useCases.upsertObjective.execute(objective)
+                try await upsertObjectiveUseCase.execute(objective)
             } catch {
                 assertionFailure("Failed to archive objective: \(error)")
             }
@@ -81,7 +105,7 @@ final class SessionTrackerViewModel {
         objectives[index] = objective
         Task {
             do {
-                try await useCases.upsertObjective.execute(objective)
+                try await upsertObjectiveUseCase.execute(objective)
             } catch {
                 assertionFailure("Failed to unarchive objective: \(error)")
             }

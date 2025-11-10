@@ -5,14 +5,14 @@ import Tracking
 extension SessionTrackerViewModel {
     func loadInitialData() async {
         do {
-            objectives = try await useCases.loadObjectives.execute()
+            objectives = try await loadObjectivesUseCase.execute()
         } catch {
             assertionFailure("Failed to load objectives: \(error)")
             objectives = []
         }
 
         do {
-            activities = try await useCases.loadActivities.execute()
+            activities = try await loadActivitiesUseCase.execute()
         } catch {
             assertionFailure("Failed to load activities: \(error)")
             activities = []
@@ -26,8 +26,8 @@ extension SessionTrackerViewModel {
 
     private func deleteActivityAsync(_ activity: Activity) async {
         do {
-            try await useCases.removeActivity.execute(activity.id)
-            activities = try await useCases.loadActivities.execute()
+            try await removeActivityUseCase.execute(activity.id)
+            activities = try await loadActivitiesUseCase.execute()
         } catch {
             assertionFailure("Failed to delete activity: \(error)")
         }
