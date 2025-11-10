@@ -25,6 +25,8 @@ extension TrackingEvent.SessionTracker.Action: FirebaseTrackableActionEvent {
             return "session_fullscreen_timer_open"
         case .openInsights:
             return "session_insights_open"
+        case .openSettings:
+            return "session_settings_open"
         case .showArchivedObjectives:
             return "session_archived_objectives_open"
         case .showAddObjective(let source):

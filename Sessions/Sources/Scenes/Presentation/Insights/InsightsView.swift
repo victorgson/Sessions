@@ -41,7 +41,7 @@ struct InsightsView: View {
                 if let focus = insights.focusObjective {
                     focusObjectiveCard(for: focus)
                 }
-                if !insights.topObjectives.isEmpty {
+                if !insights.topObjectives.isEmpty || insights.unassignedSessions != nil {
                     objectiveBreakdownCard(for: insights)
                 } else {
                     objectiveEmptyStateCard()
@@ -203,7 +203,7 @@ private extension InsightsView {
                         .animation(.easeOut(duration: 0.3), value: stat.percentage)
                 }
 
-                Text(stat.percentage.formatted(.percent.precision(.fractionLength(0))) + " of linked session time")
+                Text(stat.percentage.formatted(.percent.precision(.fractionLength(0))) + " of tracked time")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -238,7 +238,30 @@ private extension InsightsView {
                         ObjectiveProgressBar(progress: stat.percentage, color: objectiveColor)
                             .animation(.easeOut(duration: 0.3), value: stat.percentage)
 
-                        Text(stat.percentage.formatted(.percent.precision(.fractionLength(0))) + " of linked sessions")
+                        Text(stat.percentage.formatted(.percent.precision(.fractionLength(0))) + " of tracked time")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                if let unassigned = insights.unassignedSessions {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Unassigned Sessions")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                            Spacer(minLength: 12)
+                            Text(viewModel.formattedDuration(unassigned.totalDuration))
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        let unassignedColor = Color(.systemGray4)
+                        ObjectiveProgressBar(progress: unassigned.percentage, color: unassignedColor)
+                            .animation(.easeOut(duration: 0.3), value: unassigned.percentage)
+
+                        Text(unassigned.percentage.formatted(.percent.precision(.fractionLength(0))) + " of tracked time")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }

@@ -12,6 +12,12 @@ struct SessionInsights {
         var title: String { objective.title }
     }
 
+    struct UnassignedStat {
+        let totalDuration: TimeInterval
+        let sessionCount: Int
+        let percentage: Double
+    }
+
     struct WeekdayStat: Identifiable {
         let date: Date
         let label: String
@@ -29,6 +35,7 @@ struct SessionInsights {
     let currentStreakCount: Int
     let focusObjective: ObjectiveStat?
     let topObjectives: [ObjectiveStat]
+    let unassignedSessions: UnassignedStat?
     let lastActivityDate: Date?
     let lastSevenDaysStats: [WeekdayStat]
     let lastSevenDaysTotalDuration: TimeInterval
@@ -61,19 +68,24 @@ struct SessionInsights {
 
         let objectivesByID = Dictionary(uniqueKeysWithValues: objectives.map { ($0.id, $0) })
         var aggregatedByObjective: [UUID: (duration: TimeInterval, count: Int)] = [:]
+        var unassignedAggregation: (duration: TimeInterval, count: Int) = (0, 0)
         for activity in activities {
             guard let objectiveID = activity.linkedObjectiveID,
-                  objectivesByID[objectiveID] != nil else { continue }
+                  objectivesByID[objectiveID] != nil else {
+                unassignedAggregation.duration += activity.duration
+                unassignedAggregation.count += 1
+                continue
+            }
             var value = aggregatedByObjective[objectiveID] ?? (0, 0)
             value.duration += activity.duration
             value.count += 1
             aggregatedByObjective[objectiveID] = value
         }
 
-        let totalObjectiveDuration = aggregatedByObjective.values.reduce(0) { $0 + $1.duration }
+        let totalTrackedDuration = totalDuration
         let objectiveStats = aggregatedByObjective.compactMap { id, aggregation -> ObjectiveStat? in
             guard let objective = objectivesByID[id] else { return nil }
-            let percentage = totalObjectiveDuration > 0 ? aggregation.duration / totalObjectiveDuration : 0
+            let percentage = totalTrackedDuration > 0 ? aggregation.duration / totalTrackedDuration : 0
             return ObjectiveStat(
                 objective: objective,
                 totalDuration: aggregation.duration,
@@ -85,6 +97,16 @@ struct SessionInsights {
 
         focusObjective = objectiveStats.first
         topObjectives = Array(objectiveStats.prefix(3))
+        if unassignedAggregation.count > 0 {
+            let percentage = totalTrackedDuration > 0 ? unassignedAggregation.duration / totalTrackedDuration : 0
+            unassignedSessions = UnassignedStat(
+                totalDuration: unassignedAggregation.duration,
+                sessionCount: unassignedAggregation.count,
+                percentage: percentage
+            )
+        } else {
+            unassignedSessions = nil
+        }
 
         let today = calendar.startOfDay(for: Date())
         let formatter = DateFormatter()

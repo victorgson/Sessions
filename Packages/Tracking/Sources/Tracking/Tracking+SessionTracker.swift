@@ -30,6 +30,7 @@ public extension TrackingEvent {
                 case stopSession
                 case showFullScreenTimer
                 case openInsights
+                case openSettings
                 case showArchivedObjectives
                 case showAddObjective(ObjectiveSource)
                 case editObjective(id: UUID)

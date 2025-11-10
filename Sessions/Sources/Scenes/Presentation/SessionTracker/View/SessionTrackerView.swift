@@ -8,6 +8,7 @@ struct SessionTrackerView: View {
     @State private var objectiveSheetViewModel: AddObjectiveSheetViewModel?
     @State private var isShowingArchivedObjectives = false
     @State private var showFullScreenTimer = false
+    @State private var isShowingSettings = false
     init(viewModel: SessionTrackerViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
@@ -81,7 +82,7 @@ struct SessionTrackerView: View {
                 .statusBarHidden(true)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
                     NavigationLink {
                         InsightsView(viewModel: bindableViewModel)
                     } label: {
@@ -92,12 +93,24 @@ struct SessionTrackerView: View {
                     .simultaneousGesture(TapGesture().onEnded {
                         bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .openInsights))
                     })
+
+                    Button {
+                        isShowingSettings = true
+                        bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .openSettings))
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                            .labelStyle(.iconOnly)
+                    }
+                    .accessibilityLabel("Settings")
                 }
             }
         }
         .paywallIfNeeded()
         .onAppear {
             viewModel.trackPageView()
+        }
+        .sheet(isPresented: $isShowingSettings) {
+            SettingsView()
         }
         .sheet(isPresented: Binding(
             get: { bindableViewModel.activityDraft != nil },
