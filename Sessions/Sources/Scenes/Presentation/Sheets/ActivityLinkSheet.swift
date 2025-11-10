@@ -63,23 +63,17 @@ struct ActivityLinkSheet: View {
                     }
 
                     SheetCardContainer(title: "Notes") {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Reflection")
-                                .sheetCardLabelStyle()
-                            TextField("Reflection", text: $bindableViewModel.note, axis: .vertical)
-                                .textFieldStyle(.plain)
-                                .sheetInputFieldBackground()
-                                .lineLimit(3, reservesSpace: true)
-                        }
+                        TextField("Reflection", text: $bindableViewModel.note, axis: .vertical)
+                            .textFieldStyle(.plain)
+                            .sheetInputFieldBackground()
+                            .lineLimit(3, reservesSpace: true)
                     }
 
                     SheetCardContainer(title: "Tags") {
-                        SheetLabeledTextField(
-                            title: "Tags",
-                            placeholder: "Comma separated",
-                            text: $bindableViewModel.tagsText,
-                            autocapitalization: .never
-                        )
+                        TextField("Comma separated", text: $bindableViewModel.tagsText)
+                            .textFieldStyle(.plain)
+                            .textInputAutocapitalization(.never)
+                            .sheetInputFieldBackground()
                     }
 
                     SheetCardContainer {
