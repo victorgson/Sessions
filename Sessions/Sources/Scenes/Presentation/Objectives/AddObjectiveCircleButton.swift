@@ -24,6 +24,7 @@ struct AddObjectiveCircleButton: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(1)
             }
             .frame(width: 96)
         }

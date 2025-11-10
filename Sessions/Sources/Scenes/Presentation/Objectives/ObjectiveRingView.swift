@@ -41,7 +41,7 @@ struct ObjectiveRingView: View {
             .frame(width: 88, height: 88)
 
             Text(objective.title)
-                .font(.subheadline.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
