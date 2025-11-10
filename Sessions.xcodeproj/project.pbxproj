@@ -25,6 +25,8 @@
 		6A6152392EB692BC006AF339 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 6A6152382EB692BC006AF339 /* RevenueCatUI */; };
 		6A61523B2EB692DF006AF339 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A61523A2EB692DF006AF339 /* StoreKit.framework */; };
 		6A61523C2EB692E9006AF339 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A61523A2EB692DF006AF339 /* StoreKit.framework */; };
+		6AB1CBEB2EC2720500631F7D /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6AB1CBEA2EC2720500631F7D /* FactoryKit */; };
+		6AB1CBED2EC2721800631F7D /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6AB1CBEC2EC2721800631F7D /* FactoryKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -207,6 +209,7 @@
 				6A6152332EB692A4006AF339 /* RevenueCat in Frameworks */,
 				6A61504B2EB68091006AF339 /* TrackingFirebase in Frameworks */,
 				6A614E522EB67786006AF339 /* FirebaseCrashlytics in Frameworks */,
+				6AB1CBEB2EC2720500631F7D /* FactoryKit in Frameworks */,
 				6A61523B2EB692DF006AF339 /* StoreKit.framework in Frameworks */,
 				6A6152352EB692A4006AF339 /* RevenueCatUI in Frameworks */,
 				6A6150452EB67FE1006AF339 /* Tracking in Frameworks */,
@@ -229,6 +232,7 @@
 				6A6152372EB692B6006AF339 /* RevenueCat in Frameworks */,
 				6A6150492EB6808D006AF339 /* TrackingFirebase in Frameworks */,
 				6A614E4E2EB6771A006AF339 /* FirebaseCrashlytics in Frameworks */,
+				6AB1CBED2EC2721800631F7D /* FactoryKit in Frameworks */,
 				6A61523C2EB692E9006AF339 /* StoreKit.framework in Frameworks */,
 				6A6152392EB692BC006AF339 /* RevenueCatUI in Frameworks */,
 				6A6150472EB67FE5006AF339 /* Tracking in Frameworks */,
@@ -309,6 +313,7 @@
 				6A61504A2EB68091006AF339 /* TrackingFirebase */,
 				6A6152322EB692A4006AF339 /* RevenueCat */,
 				6A6152342EB692A4006AF339 /* RevenueCatUI */,
+				6AB1CBEA2EC2720500631F7D /* FactoryKit */,
 			);
 			productName = timeline;
 			productReference = 37E868972EA1AAEC00B92107 /* Sessions.app */;
@@ -363,6 +368,7 @@
 				6A6150482EB6808D006AF339 /* TrackingFirebase */,
 				6A6152362EB692B6006AF339 /* RevenueCat */,
 				6A6152382EB692BC006AF339 /* RevenueCatUI */,
+				6AB1CBEC2EC2721800631F7D /* FactoryKit */,
 			);
 			productName = timeline;
 			productReference = 6A614DE12EB66BF1006AF339 /* SessionsDev.app */;
@@ -421,6 +427,7 @@
 				6AD988E32EAD4B1900BF64E2 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 				6A614E4C2EB6771A006AF339 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				6A6152312EB692A4006AF339 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				6AB1CBE92EC2720500631F7D /* XCRemoteSwiftPackageReference "Factory" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37E868982EA1AAEC00B92107 /* Products */;
@@ -1047,6 +1054,14 @@
 				minimumVersion = 5.46.0;
 			};
 		};
+		6AB1CBE92EC2720500631F7D /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.3;
+			};
+		};
 		6AD988E32EAD4B1900BF64E2 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
@@ -1103,6 +1118,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6A6152312EB692A4006AF339 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
+		};
+		6AB1CBEA2EC2720500631F7D /* FactoryKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6AB1CBE92EC2720500631F7D /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = FactoryKit;
+		};
+		6AB1CBEC2EC2721800631F7D /* FactoryKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6AB1CBE92EC2720500631F7D /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = FactoryKit;
 		};
 		6AD988E42EAD4B2800BF64E2 /* SwiftLintBuildToolPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
