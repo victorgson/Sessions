@@ -34,7 +34,9 @@ struct AddObjectiveSheet: View {
                         SheetCardContainer {
                             VStack(alignment: .leading, spacing: 16) {
                                 HStack(alignment: .top, spacing: 12) {
-                                    Image(systemName: viewModel.isArchived ? "archivebox.fill" : "checkmark.circle.fill")
+                                    Image(
+                                        systemName: viewModel.isArchived ? "archivebox.fill" : "checkmark.circle.fill"
+                                    )
                                         .font(.system(size: 28))
                                         .foregroundStyle(Color.accentColor)
                                     VStack(alignment: .leading, spacing: 4) {

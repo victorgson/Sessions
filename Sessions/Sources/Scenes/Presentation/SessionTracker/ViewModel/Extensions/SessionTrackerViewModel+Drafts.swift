@@ -9,18 +9,25 @@ extension SessionTrackerViewModel {
         Task { await saveDraftAsync(draft: draft) }
     }
 
+    func discardDraft() {
+        guard let draft = activityDraft else { return }
+        activityDraft = nil
+        trackAction(TrackingEvent.SessionTracker.Action(value: .discardActivityDraft(isEditing: draft.isEditing)))
+        hapticBox.triggerNotification(DefaultHapticBox.Notification.warning)
+    }
+
     func setDraftObjective(_ objectiveID: UUID?) {
         guard var draft = activityDraft else { return }
         guard draft.selectedObjectiveID != objectiveID else { return }
 
         draft.selectedObjectiveID = objectiveID
 
-        if let objectiveID, let objective = objective(withID: objectiveID) {
-            draft.selectedTimeAllocations = defaultTimeAllocations(
+        if let objectiveID, let objective = objectivesViewModel.objective(withID: objectiveID) {
+            draft.selectedTimeAllocations = objectivesViewModel.defaultTimeAllocations(
                 for: objective,
                 duration: draft.duration
             )
-            draft.quantityValues = defaultQuantityValues(for: objective)
+            draft.quantityValues = objectivesViewModel.defaultQuantityValues(for: objective)
         } else {
             draft.selectedTimeAllocations = [:]
             draft.quantityValues = [:]
@@ -62,15 +69,18 @@ extension SessionTrackerViewModel {
     }
 
     func editActivity(_ activity: Activity) {
-        trackAction(TrackingEvent.SessionTracker.Action(value: .openActivityDraft(.edit)))
+        trackAction(
+            TrackingEvent.SessionTracker.Action(value: .openActivityDraft(.edit))
+        )
         var allocations: [UUID: TimeInterval] = [:]
         for allocation in activity.keyResultAllocations {
             allocations[allocation.keyResultID] = allocation.seconds
         }
 
         var quantityValues: [UUID: Double] = [:]
-        if let objectiveID = activity.linkedObjectiveID, let objective = objective(withID: objectiveID) {
-            quantityValues = defaultQuantityValues(for: objective)
+        if let objectiveID = activity.linkedObjectiveID,
+           let objective = objectivesViewModel.objective(withID: objectiveID) {
+            quantityValues = objectivesViewModel.defaultQuantityValues(for: objective)
         }
 
         activityDraft = ActivityDraft(
@@ -86,7 +96,7 @@ extension SessionTrackerViewModel {
     }
 
     func applyQuantityOverrides(_ overrides: [UUID: Double], to objectiveID: UUID) {
-        mutateObjective(withID: objectiveID) { objective in
+        objectivesViewModel.mutateObjective(withID: objectiveID) { objective in
             for (keyResultID, value) in overrides {
                 guard let index = objective.keyResults.firstIndex(where: { $0.id == keyResultID }),
                       var quantity = objective.keyResults[index].quantityMetric else { continue }
@@ -102,7 +112,7 @@ extension SessionTrackerViewModel {
         adding: Bool
     ) {
         guard !allocations.isEmpty else { return }
-        mutateObjective(withID: objectiveID) { objective in
+        objectivesViewModel.mutateObjective(withID: objectiveID) { objective in
             for allocation in allocations {
                 guard let index = objective.keyResults.firstIndex(where: { $0.id == allocation.keyResultID }),
                       var timeMetric = objective.keyResults[index].timeMetric else { continue }
@@ -142,11 +152,7 @@ private extension SessionTrackerViewModel {
             await persistNewActivity(activity, draft: draft)
         }
 
-        do {
-            activities = try await loadActivitiesUseCase.execute()
-        } catch {
-            assertionFailure("Failed to refresh activities: \(error)")
-        }
+        await recentSessionsViewModel.loadActivities()
 
         activityDraft = nil
         promptAppStoreRatingUseCase.execute(
@@ -200,36 +206,4 @@ private extension SessionTrackerViewModel {
         }
     }
 
-    func defaultTimeAllocations(
-        for objective: Objective,
-        duration: TimeInterval
-    ) -> [UUID: TimeInterval] {
-        objective.keyResults.reduce(into: [UUID: TimeInterval]()) { partialResult, keyResult in
-            guard keyResult.timeMetric != nil else { return }
-            partialResult[keyResult.id] = duration
-        }
-    }
-
-    func defaultQuantityValues(for objective: Objective) -> [UUID: Double] {
-        objective.keyResults.reduce(into: [UUID: Double]()) { partialResult, keyResult in
-            if let quantity = keyResult.quantityMetric {
-                partialResult[keyResult.id] = quantity.current
-            }
-        }
-    }
-
-    func mutateObjective(withID id: UUID, mutation: (inout Objective) -> Void) {
-        guard let index = objectives.firstIndex(where: { $0.id == id }) else { return }
-        var objective = objectives[index]
-        mutation(&objective)
-        updateCompletionStatus(for: &objective)
-        objectives[index] = objective
-        Task {
-            do {
-                try await upsertObjectiveUseCase.execute(objective)
-            } catch {
-                assertionFailure("Failed to persist objective mutation: \(error)")
-            }
-        }
-    }
 }

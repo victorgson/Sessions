@@ -1,14 +1,20 @@
 import SwiftUI
 
 struct ArchivedObjectivesView: View {
-    let objectives: [Objective]
+    @Bindable private var viewModel: ArchivedObjectivesViewModel
     let onClose: () -> Void
     let onSelect: (Objective) -> Void
+
+    init(viewModel: ArchivedObjectivesViewModel, onClose: @escaping () -> Void, onSelect: @escaping (Objective) -> Void) {
+        self.viewModel = viewModel
+        self.onClose = onClose
+        self.onSelect = onSelect
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                if objectives.isEmpty {
+                if viewModel.objectives.isEmpty {
                     Text("No archived objectives yet.")
                         .font(.body)
                         .foregroundStyle(.secondary)
@@ -16,7 +22,7 @@ struct ArchivedObjectivesView: View {
                         .padding(.vertical, 32)
                         .listRowBackground(Color.clear)
                 } else {
-                    ForEach(objectives) { objective in
+                    ForEach(viewModel.objectives) { objective in
                         Button {
                             onSelect(objective)
                         } label: {

@@ -94,6 +94,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Sources/Application/LiveActivities/SessionLiveActivityController.swift,
+				Sources/Application/LiveActivities/SessionLiveActivityState.swift,
 				Sources/Scenes/Presentation/Support/TimelinePalette.swift,
 			);
 			target = 6A2E5E2E2EB163C9000FBAE6 /* SessionsLiveActivity */;
@@ -128,6 +129,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Sources/Application/LiveActivities/SessionLiveActivityController.swift,
+				Sources/Application/LiveActivities/SessionLiveActivityState.swift,
 				Sources/Scenes/Presentation/Support/TimelinePalette.swift,
 			);
 			target = 6A614DE42EB66CD9006AF339 /* SessionsLiveActivityDev */;
@@ -476,6 +478,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		6A614E592EB678E9006AF339 /* Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -500,6 +503,7 @@
 		};
 		6A614E5A2EB67989006AF339 /* Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);

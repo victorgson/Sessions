@@ -2,6 +2,8 @@ import SwiftUI
 
 struct InactiveSessionCard: View {
     let action: () -> Void
+    let configureAction: () -> Void
+    let subtitle: String
 
     var body: some View {
         HStack(spacing: 18) {
@@ -18,7 +20,7 @@ struct InactiveSessionCard: View {
                 Text("Start Session")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)
-                Text("Log what you’re working on")
+                Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -42,5 +44,16 @@ struct InactiveSessionCard: View {
         .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .onTapGesture(perform: action)
+        .overlay(alignment: .topTrailing) {
+            Button(action: configureAction) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(12)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Configure session timer")
+        }
     }
 }

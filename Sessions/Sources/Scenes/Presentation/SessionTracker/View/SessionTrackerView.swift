@@ -9,63 +9,25 @@ struct SessionTrackerView: View {
     @State private var isShowingArchivedObjectives = false
     @State private var showFullScreenTimer = false
     @State private var isShowingSettings = false
+    @State private var isShowingTimerConfiguration = false
     init(viewModel: SessionTrackerViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {
         @Bindable var bindableViewModel = viewModel
+        @Bindable var objectivesViewModel = bindableViewModel.objectivesViewModel
+        @Bindable var timerViewModel = bindableViewModel.timerViewModel
+        @Bindable var recentSessionsViewModel = bindableViewModel.recentSessionsViewModel
 
         NavigationStack {
             List {
-
-                Section {
-                    objectivesSection(viewModel: bindableViewModel)
-                        .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 8, trailing: 0))
-                        .listRowBackground(Color.clear)
+                ForEach(bindableViewModel.homeSections) { section in
+                    sectionView(
+                        section: section,
+                        baseViewModel: bindableViewModel
+                    )
                 }
-                .textCase(nil)
-                .listSectionSeparator(.hidden)
-
-                Section {
-                SessionTimerView(viewModel: bindableViewModel) {
-                    bindableViewModel.startSession()
-                    showFullScreenTimer = true
-                    bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showFullScreenTimer))
-                }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        if bindableViewModel.isTimerRunning {
-                            showFullScreenTimer = true
-                            bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showFullScreenTimer))
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 24, trailing: 20))
-                    .listRowBackground(Color.clear)
-                }
-                .textCase(nil)
-                .listSectionSeparator(.hidden)
-
-                ActivityFeedView(
-                    sections: activitySections(for: bindableViewModel),
-                    emptyStateMessage: "No sessions logged yet.",
-                    titleProvider: { activity in
-                        bindableViewModel.label(for: activity, calendar: calendar)
-                    },
-                    durationFormatter: { duration in
-                        bindableViewModel.formattedDuration(duration)
-                    },
-                    colorProvider: { activity in
-                        guard let hex = bindableViewModel.colorHex(for: activity.linkedObjectiveID) else { return nil }
-                        return Color(hex: hex)
-                    },
-                    onSelect: { activity in
-                        bindableViewModel.editActivity(activity)
-                    },
-                    onDelete: { activity in
-                        bindableViewModel.deleteActivity(activity)
-                    }
-                )
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -73,7 +35,7 @@ struct SessionTrackerView: View {
             .navigationTitle("Sessions")
             .navigationDestination(isPresented: $showFullScreenTimer) {
                 SessionDetailView(
-                    viewModel: bindableViewModel,
+                    timerViewModel: timerViewModel,
                     onStop: {
                         showFullScreenTimer = false
                     }
@@ -84,7 +46,7 @@ struct SessionTrackerView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     NavigationLink {
-                        InsightsView(viewModel: bindableViewModel)
+                        InsightsView(viewModel: bindableViewModel.insightsViewModel)
                     } label: {
                         Label("Insights", systemImage: "chart.bar.fill")
                             .labelStyle(.iconOnly)
@@ -110,10 +72,17 @@ struct SessionTrackerView: View {
             onRestoreCompleted: { _ in refreshSubscriptionStatus() }
         )
         .onAppear {
-            viewModel.trackPageView()
+            bindableViewModel.trackPageView()
         }
         .sheet(isPresented: $isShowingSettings) {
-            SettingsView(subscriptionStatusProvider: viewModel.subscriptionStatusProvider)
+            if case let .settings(viewModel)? = bindableViewModel.sheet(for: .settings) {
+                SettingsView(viewModel: viewModel)
+            }
+        }
+        .sheet(isPresented: $isShowingTimerConfiguration) {
+            if case let .timerConfiguration(viewModel)? = bindableViewModel.sheet(for: .timerConfiguration) {
+                TimerConfigurationSheet(viewModel: viewModel)
+            }
         }
         .sheet(isPresented: Binding(
             get: { bindableViewModel.activityDraft != nil },
@@ -123,81 +92,77 @@ struct SessionTrackerView: View {
                 }
             }
         )) {
-            if let draft = bindableViewModel.activityDraft {
-                ActivityLinkSheet(
-                    objectives: bindableViewModel.activeObjectives,
-                    draft: draft,
-                    onSelectObjective: { objectiveID in
-                        bindableViewModel.setDraftObjective(objectiveID)
-                        return bindableViewModel.activityDraft?.quantityValues ?? [:]
-                    },
-                    onSetQuantity: { keyResultID, value in
-                        bindableViewModel.setDraftQuantityValue(value, for: keyResultID)
-                    },
-                    onChangeNote: { bindableViewModel.setDraftNote($0) },
-                    onChangeTags: { bindableViewModel.setDraftTags($0) },
-                    onSave: { bindableViewModel.saveDraft() },
-                    onDiscard: { bindableViewModel.discardDraft() }
-                )
-                .presentationDetents([.medium, .large])
+            if case let .activityLink(viewModel)? = bindableViewModel.sheet(for: .activityLink) {
+                ActivityLinkSheet(viewModel: viewModel)
+                    .presentationDetents([.medium, .large])
             }
         }
         .sheet(item: $objectiveSheetViewModel) { sheetViewModel in
             AddObjectiveSheet(viewModel: sheetViewModel) { submission in
-                bindableViewModel.handleObjectiveSubmission(submission)
+                objectivesViewModel.handleObjectiveSubmission(submission)
                 objectiveSheetViewModel = nil
             } onCancel: {
                 objectiveSheetViewModel = nil
             } onArchive: {
                 if let id = sheetViewModel.objectiveID {
-                    bindableViewModel.archiveObjective(withID: id)
+                    objectivesViewModel.archiveObjective(withID: id)
                 }
                 objectiveSheetViewModel = nil
             } onUnarchive: {
                 if let id = sheetViewModel.objectiveID {
-                    bindableViewModel.unarchiveObjective(withID: id)
+                    objectivesViewModel.unarchiveObjective(withID: id)
                 }
                 objectiveSheetViewModel = nil
             } onDelete: {
                 if let id = sheetViewModel.objectiveID {
-                    bindableViewModel.deleteObjective(withID: id)
+                    objectivesViewModel.deleteObjective(withID: id)
                 }
                 objectiveSheetViewModel = nil
             }
         }
         .sheet(isPresented: $isShowingArchivedObjectives) {
-            ArchivedObjectivesView(
-                objectives: bindableViewModel.archivedObjectives,
-                onClose: {
-                    isShowingArchivedObjectives = false
-                },
-                onSelect: { objective in
-                    isShowingArchivedObjectives = false
-                    bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .editObjective(id: objective.id)))
-                    objectiveSheetViewModel = AddObjectiveSheetViewModel(
-                        mode: .edit(objective),
-                        defaultColor: ObjectiveColorProvider.color(for: objective)
-                    )
-                }
-            )
+            if case let .archivedObjectives(viewModel)? = bindableViewModel.sheet(for: .archivedObjectives) {
+                ArchivedObjectivesView(
+                    viewModel: viewModel,
+                    onClose: {
+                        isShowingArchivedObjectives = false
+                    },
+                    onSelect: { objective in
+                        isShowingArchivedObjectives = false
+                        bindableViewModel.trackAction(
+                            TrackingEvent.SessionTracker.Action(value: .editObjective(id: objective.id))
+                        )
+                        objectiveSheetViewModel = AddObjectiveSheetViewModel(
+                            mode: .edit(objective),
+                            defaultColor: ObjectiveColorProvider.color(for: objective)
+                        )
+                    }
+                )
+            }
         }
-        .onChange(of: bindableViewModel.isTimerRunning) { _, running in
+        .onChange(of: timerViewModel.isTimerRunning) { _, running in
             if !running {
                 showFullScreenTimer = false
             }
         }
     }
 
-    private func objectivesSection(viewModel: SessionTrackerViewModel) -> some View {
+    // swiftlint:disable:next function_body_length
+    private func objectivesSection(
+        viewModel: SessionTrackerViewModel,
+        objectivesViewModel: ObjectivesOverviewViewModel
+    ) -> some View {
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Objectives")
                     .font(.headline)
                     .foregroundStyle(.primary)
                 Spacer()
-                if viewModel.hasArchivedObjectives {
+                if objectivesViewModel.hasArchivedObjectives {
                     Button {
-                        viewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showArchivedObjectives))
+                        viewModel.trackAction(
+                            TrackingEvent.SessionTracker.Action(value: .showArchivedObjectives)
+                        )
                         isShowingArchivedObjectives = true
                     } label: {
                         Label("Archived", systemImage: "archivebox")
@@ -212,21 +177,27 @@ struct SessionTrackerView: View {
                 }
             }
             .padding(.horizontal, 20)
-            if viewModel.activeObjectives.isEmpty {
+            if objectivesViewModel.activeObjectives.isEmpty {
                 AddObjectiveCircleButton {
-                    viewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showAddObjective(.emptyState)))
+                    viewModel.trackAction(
+                        TrackingEvent.SessionTracker.Action(value: .showAddObjective(.emptyState))
+                    )
                     objectiveSheetViewModel = AddObjectiveSheetViewModel()
                 }
                 .padding(.horizontal, 20)
             } else {
                 ObjectiveCardView(
-                    objectives: viewModel.activeObjectives,
+                    objectives: objectivesViewModel.activeObjectives,
                     onAddObjective: {
-                        viewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showAddObjective(.activeObjectives)))
+                        viewModel.trackAction(
+                            TrackingEvent.SessionTracker.Action(value: .showAddObjective(.activeObjectives))
+                        )
                         objectiveSheetViewModel = AddObjectiveSheetViewModel()
                     },
                     onSelectObjective: { objective in
-                        viewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .editObjective(id: objective.id)))
+                        viewModel.trackAction(
+                            TrackingEvent.SessionTracker.Action(value: .editObjective(id: objective.id))
+                        )
                         objectiveSheetViewModel = AddObjectiveSheetViewModel(
                             mode: .edit(objective),
                             defaultColor: ObjectiveColorProvider.color(for: objective)
@@ -237,7 +208,7 @@ struct SessionTrackerView: View {
         }
     }
 
-    private func activitySections(for viewModel: SessionTrackerViewModel) -> [ActivityFeedSection] {
+    private func activitySections(for viewModel: RecentSessionsViewModel) -> [ActivityFeedSection] {
         guard !viewModel.activities.isEmpty else { return [] }
 
         let grouped = Dictionary(grouping: viewModel.activities) { activity -> Date in
@@ -276,5 +247,104 @@ private struct TrailingIconLabelStyle: LabelStyle {
             configuration.title
             configuration.icon
         }
+    }
+}
+
+@MainActor
+private extension SessionTrackerView {
+    @ViewBuilder
+    func sectionView(
+        section: SessionTrackerViewModel.HomeSection,
+        baseViewModel: SessionTrackerViewModel
+    ) -> some View {
+        switch section {
+        case .objectives(let viewModel):
+            objectivesSectionView(
+                viewModel: baseViewModel,
+                objectivesViewModel: viewModel
+            )
+
+        case .timer(let viewModel):
+            timerSectionView(
+                baseViewModel: baseViewModel,
+                timerViewModel: viewModel
+            )
+
+        case .activityFeed(let viewModel):
+            activityFeedSectionView(
+                baseViewModel: baseViewModel,
+                objectivesViewModel: baseViewModel.objectivesViewModel,
+                recentSessionsViewModel: viewModel
+            )
+        }
+    }
+
+    @ViewBuilder
+    func objectivesSectionView(
+        viewModel: SessionTrackerViewModel,
+        objectivesViewModel: ObjectivesOverviewViewModel
+    ) -> some View {
+        Section {
+            objectivesSection(viewModel: viewModel, objectivesViewModel: objectivesViewModel)
+                .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 8, trailing: 0))
+                .listRowBackground(Color.clear)
+        }
+        .textCase(nil)
+        .listSectionSeparator(.hidden)
+    }
+
+    @ViewBuilder
+    func timerSectionView(
+        baseViewModel: SessionTrackerViewModel,
+        timerViewModel: SessionTimerViewModel
+    ) -> some View {
+        Section {
+            SessionTimerView(viewModel: timerViewModel) {
+                timerViewModel.startSession()
+                showFullScreenTimer = true
+                baseViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showFullScreenTimer))
+            } onConfigure: {
+                isShowingTimerConfiguration = true
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if timerViewModel.isTimerRunning {
+                    showFullScreenTimer = true
+                    baseViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showFullScreenTimer))
+                }
+            }
+            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 24, trailing: 20))
+            .listRowBackground(Color.clear)
+        }
+        .textCase(nil)
+        .listSectionSeparator(.hidden)
+    }
+
+    @ViewBuilder
+    func activityFeedSectionView(
+        baseViewModel: SessionTrackerViewModel,
+        objectivesViewModel: ObjectivesOverviewViewModel,
+        recentSessionsViewModel: RecentSessionsViewModel
+    ) -> some View {
+        ActivityFeedView(
+            sections: activitySections(for: recentSessionsViewModel),
+            emptyStateMessage: "No sessions logged yet.",
+            titleProvider: { activity in
+                objectivesViewModel.label(for: activity, calendar: calendar)
+            },
+            durationFormatter: { duration in
+                baseViewModel.formattedDuration(duration)
+            },
+            colorProvider: { activity in
+                guard let hex = objectivesViewModel.colorHex(for: activity.linkedObjectiveID) else { return nil }
+                return Color(hex: hex)
+            },
+            onSelect: { activity in
+                baseViewModel.editActivity(activity)
+            },
+            onDelete: { activity in
+                recentSessionsViewModel.deleteActivity(activity)
+            }
+        )
     }
 }

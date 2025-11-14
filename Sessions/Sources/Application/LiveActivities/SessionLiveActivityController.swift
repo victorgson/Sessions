@@ -1,7 +1,8 @@
 import Foundation
 
 protocol SessionLiveActivityControlling: AnyObject {
-    func startLiveActivity(startDate: Date) async
+    func startLiveActivity(startDate: Date, state: SessionLiveActivityDisplayState) async
+    func updateLiveActivity(with state: SessionLiveActivityDisplayState) async
     func endLiveActivity() async
 }
 
@@ -12,22 +13,21 @@ final class DefaultSessionLiveActivityController: SessionLiveActivityControlling
     private typealias SessionActivity = ActivityKit.Activity<SessionLiveActivityAttributes>
 
     private var currentActivity: SessionActivity?
+    private var lastState: SessionLiveActivityDisplayState?
 
     init() {
         currentActivity = SessionActivity.activities.first
     }
 
-    func startLiveActivity(startDate: Date) async {
+    func startLiveActivity(startDate: Date, state: SessionLiveActivityDisplayState) async {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
 
         await endLiveActivity()
         await endDanglingActivities()
 
         let attributes = SessionLiveActivityAttributes(startDate: startDate)
-        let contentState = SessionLiveActivityAttributes.ContentState(
-            timerRange: startDate...Date.distantFuture
-        )
-        let content = ActivityContent(state: contentState, staleDate: nil)
+        lastState = state
+        let content = ActivityContent(state: contentState(from: state), staleDate: nil)
 
         do {
             currentActivity = try SessionActivity.request(attributes: attributes, content: content)
@@ -36,27 +36,51 @@ final class DefaultSessionLiveActivityController: SessionLiveActivityControlling
         }
     }
 
+    func updateLiveActivity(with state: SessionLiveActivityDisplayState) async {
+        guard let activity = currentActivity else { return }
+        lastState = state
+        let content = ActivityContent(state: contentState(from: state), staleDate: nil)
+        await activity.update(content)
+    }
+
     func endLiveActivity() async {
         guard let activity = currentActivity else { return }
         let timerRange = activity.attributes.startDate...Date()
-        let content = ActivityContent(
-            state: SessionLiveActivityAttributes.ContentState(timerRange: timerRange),
-            staleDate: nil
+        let finalState = SessionLiveActivityDisplayState(
+            timerRange: timerRange,
+            countsDown: false,
+            title: lastState?.title ?? "Session",
+            detail: lastState?.detail
         )
+        let content = ActivityContent(state: contentState(from: finalState), staleDate: nil)
         await activity.end(content, dismissalPolicy: .immediate)
         currentActivity = nil
+        lastState = nil
     }
 
     private func endDanglingActivities() async {
         let activeActivities = SessionActivity.activities
         for activity in activeActivities where activity.id != currentActivity?.id {
             let timerRange = activity.attributes.startDate...Date()
-            let content = ActivityContent(
-                state: SessionLiveActivityAttributes.ContentState(timerRange: timerRange),
-                staleDate: nil
+            let fallbackState = SessionLiveActivityDisplayState(
+                timerRange: timerRange,
+                countsDown: false,
+                title: "Session",
+                detail: nil
             )
+            let content = ActivityContent(state: contentState(from: fallbackState), staleDate: nil)
             await activity.end(content, dismissalPolicy: .immediate)
         }
     }
-}
 
+    private func contentState(
+        from state: SessionLiveActivityDisplayState
+    ) -> SessionLiveActivityAttributes.ContentState {
+        SessionLiveActivityAttributes.ContentState(
+            timerRange: state.timerRange,
+            countsDown: state.countsDown,
+            title: state.title,
+            detail: state.detail
+        )
+    }
+}

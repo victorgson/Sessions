@@ -94,6 +94,11 @@ extension Container {
             .singleton
     }
 
+    var sessionTimerConfigurationStore: Factory<SessionTimerConfigurationStoring> {
+        Factory(self) { @MainActor in DefaultsSessionTimerConfigurationStore() }
+            .singleton
+    }
+
     var sessionTrackerViewModel: Factory<SessionTrackerViewModel> {
         Factory(self) { @MainActor in
             return SessionTrackerViewModel(
@@ -109,7 +114,8 @@ extension Container {
                 trackerDispatcher: self.trackerDispatcher(),
                 hapticBox: self.hapticBox(),
                 liveActivityController: self.liveActivityController(),
-                subscriptionStatusProvider: self.subscriptionStatusProvider()
+                subscriptionStatusProvider: self.subscriptionStatusProvider(),
+                timerConfigurationStore: self.sessionTimerConfigurationStore()
             )
         }
         .singleton

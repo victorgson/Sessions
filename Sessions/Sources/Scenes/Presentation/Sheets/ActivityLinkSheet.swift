@@ -2,35 +2,17 @@ import SwiftUI
 import Observation
 
 struct ActivityLinkSheet: View {
-    let objectives: [Objective]
-    let sessionDuration: TimeInterval
+    @Bindable private var coordinator: ActivityLinkSheetCoordinator
     @State private var viewModel: ActivityLinkSheetViewModel
-    let onSelectObjective: (UUID?) -> [UUID: Double]
-    let onSetQuantity: (UUID, Double) -> Void
-    let onChangeNote: (String) -> Void
-    let onChangeTags: (String) -> Void
-    let onSave: () -> Void
-    let onDiscard: () -> Void
+    private let sessionDuration: TimeInterval
 
-    init(
-        objectives: [Objective],
-        draft: SessionTrackerViewModel.ActivityDraft,
-        onSelectObjective: @escaping (UUID?) -> [UUID: Double],
-        onSetQuantity: @escaping (UUID, Double) -> Void,
-        onChangeNote: @escaping (String) -> Void,
-        onChangeTags: @escaping (String) -> Void,
-        onSave: @escaping () -> Void,
-        onDiscard: @escaping () -> Void
-    ) {
-        self.objectives = objectives
+    init(viewModel: ActivityLinkSheetCoordinator) {
+        guard let draft = viewModel.draft else {
+            preconditionFailure("ActivityLinkSheet requires an active draft")
+        }
+        self.coordinator = viewModel
         self.sessionDuration = draft.duration
         _viewModel = State(initialValue: ActivityLinkSheetViewModel(draft: draft))
-        self.onSelectObjective = onSelectObjective
-        self.onSetQuantity = onSetQuantity
-        self.onChangeNote = onChangeNote
-        self.onChangeTags = onChangeTags
-        self.onSave = onSave
-        self.onDiscard = onDiscard
     }
 
     var body: some View {
@@ -47,7 +29,7 @@ struct ActivityLinkSheet: View {
                             Picker(selection: $bindableViewModel.selectedObjectiveID) {
                                 Text("None")
                                     .tag(UUID?.none)
-                                ForEach(objectives) { objective in
+                                ForEach(coordinator.objectives) { objective in
                                     Text(objective.title)
                                         .tag(UUID?.some(objective.id))
                                 }
@@ -79,14 +61,14 @@ struct ActivityLinkSheet: View {
                     SheetCardContainer {
                         VStack(spacing: 12) {
                             Button {
-                                onSave()
+                                coordinator.saveDraft()
                             } label: {
                                 Text("Save Session")
                             }
                             .timelineStyle(.primary)
 
                             Button(role: .destructive) {
-                                onDiscard()
+                                coordinator.discardDraft()
                             } label: {
                                 Text("Discard")
                             }
@@ -102,14 +84,14 @@ struct ActivityLinkSheet: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .onChange(of: viewModel.selectedObjectiveID) { _, newValue in
-            let quantityDefaults = onSelectObjective(newValue)
+            let quantityDefaults = coordinator.selectObjective(newValue)
             viewModel.updateQuantityValues(quantityDefaults)
         }
         .onChange(of: viewModel.note) { _, newValue in
-            onChangeNote(newValue)
+            coordinator.updateNote(newValue)
         }
         .onChange(of: viewModel.tagsText) { _, newValue in
-            onChangeTags(newValue)
+            coordinator.updateTags(newValue)
         }
     }
 
@@ -170,7 +152,7 @@ struct ActivityLinkSheet: View {
                             set: { newValue in
                                 let roundedValue = round(newValue)
                                 viewModel.setQuantityValue(roundedValue, for: keyResult.id)
-                                onSetQuantity(keyResult.id, roundedValue)
+                                coordinator.setQuantity(roundedValue, for: keyResult.id)
                             }
                         ),
                         in: 0...sliderUpperBound(for: keyResult, metric: quantityMetric),
@@ -199,7 +181,7 @@ struct ActivityLinkSheet: View {
 
     private func objective(for id: UUID?) -> Objective? {
         guard let id else { return nil }
-        return objectives.first(where: { $0.id == id })
+        return coordinator.objectives.first(where: { $0.id == id })
     }
 
     private func timeDescription(for metric: KeyResult.TimeMetric) -> String {

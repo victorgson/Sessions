@@ -41,6 +41,7 @@ struct SessionInsights {
     let lastSevenDaysTotalDuration: TimeInterval
     let lastSevenDaysSessionCount: Int
 
+    // swiftlint:disable function_body_length
     init(activities: [Activity], objectives: [Objective], calendar: Calendar = .current) {
         totalSessions = activities.count
         totalDuration = activities.reduce(0) { $0 + $1.duration }
@@ -140,4 +141,5 @@ struct SessionInsights {
         lastSevenDaysTotalDuration = sevenDayDuration
         lastSevenDaysSessionCount = sevenDaySessions
     }
+    // swiftlint:enable function_body_length
 }

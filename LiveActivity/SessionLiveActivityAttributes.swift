@@ -5,9 +5,15 @@ import Foundation
 struct SessionLiveActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
         var timerRange: ClosedRange<Date>
+        var countsDown: Bool
+        var title: String
+        var detail: String?
 
-        init(timerRange: ClosedRange<Date>) {
+        init(timerRange: ClosedRange<Date>, countsDown: Bool, title: String, detail: String? = nil) {
             self.timerRange = timerRange
+            self.countsDown = countsDown
+            self.title = title
+            self.detail = detail
         }
     }
 

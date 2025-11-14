@@ -3,10 +3,10 @@ import Observation
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    let subscriptionStatusProvider: SubscriptionStatusProviding
+    @Bindable private var viewModel: SettingsViewModel
 
-    init(subscriptionStatusProvider: SubscriptionStatusProviding) {
-        self.subscriptionStatusProvider = subscriptionStatusProvider
+    init(viewModel: SettingsViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -24,7 +24,10 @@ struct SettingsView: View {
 
                 #if DEBUG || DEVELOPMENT
                 Section("Debug") {
-                    LabeledContent("Subscription Status", value: subscriptionStatusText(subscriptionStatusProvider.status))
+                    LabeledContent(
+                        "Subscription Status",
+                        value: subscriptionStatusText(viewModel.subscriptionStatusProvider.status)
+                    )
                 }
                 #endif
             }
@@ -79,7 +82,9 @@ private struct SettingsDetailLink: View {
 }
 
 #Preview {
-    SettingsView(subscriptionStatusProvider: PreviewSubscriptionStatusProvider(status: .active(expirationDate: nil)))
+    SettingsView(viewModel: SettingsViewModel(
+        subscriptionStatusProvider: PreviewSubscriptionStatusProvider(status: .active(expirationDate: nil))
+    ))
 }
 
 @MainActor

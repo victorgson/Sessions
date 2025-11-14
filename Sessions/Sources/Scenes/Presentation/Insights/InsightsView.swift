@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct InsightsView: View {
-    @Bindable var viewModel: SessionTrackerViewModel
+    let viewModel: InsightsViewModel
     private let calendar: Calendar
     private let relativeFormatter: RelativeDateTimeFormatter
     private enum Layout {
@@ -14,7 +14,7 @@ struct InsightsView: View {
         count: 2
     )
 
-    init(viewModel: SessionTrackerViewModel, calendar: Calendar = .current) {
+    init(viewModel: InsightsViewModel, calendar: Calendar = .current) {
         self.viewModel = viewModel
         self.calendar = calendar
 
@@ -189,7 +189,9 @@ private extension InsightsView {
                         Text(stat.title)
                             .font(.headline)
                             .foregroundStyle(.primary)
-                        Text("\(viewModel.formattedDuration(stat.totalDuration)) across \(stat.sessionCount) \(stat.sessionCount == 1 ? "session" : "sessions")")
+                        let durationText = viewModel.formattedDuration(stat.totalDuration)
+                        let sessionText = stat.sessionCount == 1 ? "session" : "sessions"
+                        Text("\(durationText) across \(stat.sessionCount) \(sessionText)")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -214,6 +216,7 @@ private extension InsightsView {
 // MARK: - Objective Breakdown
 private extension InsightsView {
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     func objectiveBreakdownCard(for insights: SessionInsights) -> some View {
         card {
             VStack(alignment: .leading, spacing: 16) {
@@ -238,7 +241,10 @@ private extension InsightsView {
                         ObjectiveProgressBar(progress: stat.percentage, color: objectiveColor)
                             .animation(.easeOut(duration: 0.3), value: stat.percentage)
 
-                        Text(stat.percentage.formatted(.percent.precision(.fractionLength(0))) + " of tracked time")
+                        let percentageText = stat.percentage.formatted(
+                            .percent.precision(.fractionLength(0))
+                        )
+                        Text("\(percentageText) of tracked time")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -261,7 +267,10 @@ private extension InsightsView {
                         ObjectiveProgressBar(progress: unassigned.percentage, color: unassignedColor)
                             .animation(.easeOut(duration: 0.3), value: unassigned.percentage)
 
-                        Text(unassigned.percentage.formatted(.percent.precision(.fractionLength(0))) + " of tracked time")
+                        let unassignedText = unassigned.percentage.formatted(
+                            .percent.precision(.fractionLength(0))
+                        )
+                        Text("\(unassignedText) of tracked time")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }

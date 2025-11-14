@@ -1,19 +1,24 @@
 import SwiftUI
 
 struct ActiveSessionCard: View {
-    let elapsedText: String
+    let display: SessionTimerSnapshot
     let stopAction: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
             VStack(spacing: 8) {
-                Text("Session Running")
+                Text(display.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.white.opacity(0.8))
-                Text(elapsedText)
+                Text(display.valueText)
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.white)
+                if let detail = display.detailText {
+                    Text(detail)
+                        .font(.footnote)
+                        .foregroundStyle(Color.white.opacity(0.75))
+                }
             }
 
             Button("End Session", action: stopAction)

@@ -6,24 +6,24 @@ import WidgetKit
 struct SessionLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: SessionLiveActivityAttributes.self) { context in
-            SessionLiveActivityLockScreenView(timerRange: context.state.timerRange)
+            SessionLiveActivityLockScreenView(state: context.state)
                 .activityBackgroundTint(.clear)
                 .activitySystemActionForegroundColor(.white)
 //                .contentMarginsDisabled()
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
-                    SessionLiveActivityExpandedView(timerRange: context.state.timerRange)
+                    SessionLiveActivityExpandedView(state: context.state)
                 }
             } compactLeading: {
-                SessionLiveActivityElapsedLabel(timerRange: context.state.timerRange)
+                SessionLiveActivityElapsedLabel(state: context.state)
                     .font(.system(.title3, design: .rounded))
                     .fontWeight(.semibold)
             } compactTrailing: {
                 Image(systemName: "timer")
                     .foregroundStyle(.white)
             } minimal: {
-                SessionLiveActivityElapsedLabel(timerRange: context.state.timerRange)
+                SessionLiveActivityElapsedLabel(state: context.state)
                     .font(.system(.caption, design: .rounded))
                     .fontWeight(.semibold)
             }
@@ -32,10 +32,10 @@ struct SessionLiveActivityWidget: Widget {
 }
 
 private struct SessionLiveActivityLockScreenView: View {
-    let timerRange: ClosedRange<Date>
+    let state: SessionLiveActivityAttributes.ContentState
 
     var body: some View {
-        SessionLiveActivityCard(timerRange: timerRange)
+        SessionLiveActivityCard(state: state)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .containerBackground(for: .widget) {
                 Color.clear
@@ -44,28 +44,33 @@ private struct SessionLiveActivityLockScreenView: View {
 }
 
 private struct SessionLiveActivityExpandedView: View {
-    let timerRange: ClosedRange<Date>
+    let state: SessionLiveActivityAttributes.ContentState
 
     var body: some View {
-        SessionLiveActivityCard(timerRange: timerRange)
+        SessionLiveActivityCard(state: state)
             .padding(.horizontal)
             .padding(.vertical, 12)
     }
 }
 
 private struct SessionLiveActivityCard: View {
-    let timerRange: ClosedRange<Date>
+    let state: SessionLiveActivityAttributes.ContentState
 
     var body: some View {
         VStack(spacing: 20) {
             VStack(spacing: 8) {
-                Text("Session Running")
+                Text(state.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.white.opacity(0.8))
-                LiveActivityTimerLabel(timerRange: timerRange)
+                LiveActivityTimerLabel(timerRange: state.timerRange, countsDown: state.countsDown)
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
+                if let detail = state.detail {
+                    Text(detail)
+                        .font(.footnote)
+                        .foregroundStyle(Color.white.opacity(0.75))
+                }
             }
             .multilineTextAlignment(.center)
         }
@@ -86,19 +91,20 @@ private struct SessionLiveActivityCard: View {
 }
 
 private struct SessionLiveActivityElapsedLabel: View {
-    let timerRange: ClosedRange<Date>
+    let state: SessionLiveActivityAttributes.ContentState
 
     var body: some View {
-        LiveActivityTimerLabel(timerRange: timerRange)
+        LiveActivityTimerLabel(timerRange: state.timerRange, countsDown: state.countsDown)
             .foregroundStyle(.white)
     }
 }
 
 private struct LiveActivityTimerLabel: View {
     let timerRange: ClosedRange<Date>
+    let countsDown: Bool
 
     var body: some View {
-        Text(timerInterval: timerRange, countsDown: false)
+        Text(timerInterval: timerRange, countsDown: countsDown)
             .monospacedDigit()
             .contentTransition(.numericText())
     }
@@ -108,7 +114,10 @@ private struct LiveActivityTimerLabel: View {
     SessionLiveActivityWidget()
 } contentStates: {
     SessionLiveActivityAttributes.ContentState(
-        timerRange: Date.now.addingTimeInterval(-90)...Date.now.addingTimeInterval(60)
+        timerRange: Date.now.addingTimeInterval(-90)...Date.now.addingTimeInterval(60),
+        countsDown: true,
+        title: "Focus",
+        detail: "Pomodoro • 25m focus, 5m break"
     )
 }
 #endif
