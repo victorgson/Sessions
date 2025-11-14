@@ -5,20 +5,20 @@ import Tracking
 @MainActor
 @Observable
 final class SessionTrackerViewModel {
-    let loadObjectivesUseCase: any LoadObjectivesUseCase
-    let loadActivitiesUseCase: any LoadActivitiesUseCase
-    let upsertObjectiveUseCase: any UpsertObjectiveUseCase
-    let createObjectiveUseCase: any CreateObjectiveUseCase
-    let removeObjectiveUseCase: any RemoveObjectiveUseCase
-    let recordActivityUseCase: any RecordActivityUseCase
-    let updateActivityUseCase: any UpdateActivityUseCase
-    let removeActivityUseCase: any RemoveActivityUseCase
-    let promptAppStoreRatingUseCase: any PromptAppStoreRatingUseCase
+    let loadObjectivesUseCase: LoadObjectivesUseCase
+    let loadActivitiesUseCase: LoadActivitiesUseCase
+    let upsertObjectiveUseCase: UpsertObjectiveUseCase
+    let createObjectiveUseCase: CreateObjectiveUseCase
+    let removeObjectiveUseCase: RemoveObjectiveUseCase
+    let recordActivityUseCase: RecordActivityUseCase
+    let updateActivityUseCase: UpdateActivityUseCase
+    let removeActivityUseCase: RemoveActivityUseCase
+    let promptAppStoreRatingUseCase: PromptAppStoreRatingUseCase
     let trackerDispatcher: TrackerDispatcher
     let hapticBox: HapticBox
-    let liveActivityController: any SessionLiveActivityControlling
-    let subscriptionStatusProvider: any SubscriptionStatusProviding
-    let timerConfigurationStore: any SessionTimerConfigurationStoring
+    let liveActivityController: SessionLiveActivityControlling
+    let subscriptionStatusProvider: SubscriptionStatusProviding
+    let timerConfigurationStore: SessionTimerConfigurationStoring
     var activityDraft: ActivityDraft?
 
     @ObservationIgnored private var cachedObjectivesViewModel: ObjectivesOverviewViewModel?
@@ -226,20 +226,20 @@ final class SessionTrackerViewModel {
         timerViewModel.formattedDuration(duration)
     }
     init(
-        loadObjectivesUseCase: any LoadObjectivesUseCase,
-        loadActivitiesUseCase: any LoadActivitiesUseCase,
-        upsertObjectiveUseCase: any UpsertObjectiveUseCase,
-        createObjectiveUseCase: any CreateObjectiveUseCase,
-        removeObjectiveUseCase: any RemoveObjectiveUseCase,
-        recordActivityUseCase: any RecordActivityUseCase,
-        updateActivityUseCase: any UpdateActivityUseCase,
-        removeActivityUseCase: any RemoveActivityUseCase,
-        promptAppStoreRatingUseCase: any PromptAppStoreRatingUseCase,
+        loadObjectivesUseCase: LoadObjectivesUseCase,
+        loadActivitiesUseCase: LoadActivitiesUseCase,
+        upsertObjectiveUseCase: UpsertObjectiveUseCase,
+        createObjectiveUseCase: CreateObjectiveUseCase,
+        removeObjectiveUseCase: RemoveObjectiveUseCase,
+        recordActivityUseCase: RecordActivityUseCase,
+        updateActivityUseCase: UpdateActivityUseCase,
+        removeActivityUseCase: RemoveActivityUseCase,
+        promptAppStoreRatingUseCase: PromptAppStoreRatingUseCase,
         trackerDispatcher: TrackerDispatcher,
         hapticBox: HapticBox,
         liveActivityController: SessionLiveActivityControlling,
-        subscriptionStatusProvider: any SubscriptionStatusProviding,
-        timerConfigurationStore: any SessionTimerConfigurationStoring
+        subscriptionStatusProvider: SubscriptionStatusProviding,
+        timerConfigurationStore: SessionTimerConfigurationStoring
     ) {
         self.loadObjectivesUseCase = loadObjectivesUseCase
         self.loadActivitiesUseCase = loadActivitiesUseCase

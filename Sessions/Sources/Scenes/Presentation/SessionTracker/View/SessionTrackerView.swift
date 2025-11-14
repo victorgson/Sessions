@@ -315,7 +315,7 @@ private extension SessionTrackerView {
             }
             .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 24, trailing: 20))
             .listRowBackground(Color.clear)
-        }
+        } 
         .textCase(nil)
         .listSectionSeparator(.hidden)
     }

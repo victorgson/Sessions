@@ -79,7 +79,6 @@ struct ActivityLinkSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 24)
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("Link Session")
             .navigationBarTitleDisplayMode(.inline)
         }

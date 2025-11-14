@@ -176,7 +176,6 @@ struct AddObjectiveSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 24)
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(viewModel.isEditing ? "Edit Objective" : "New Objective")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

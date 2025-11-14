@@ -6,6 +6,18 @@ struct InactiveSessionCard: View {
     let subtitle: String
 
     var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Spacer()
+                configureButton
+            }
+            .padding(.trailing, 4)
+
+            cardContent
+        }
+    }
+
+    private var cardContent: some View {
         HStack(spacing: 18) {
             ZStack {
                 Circle()
@@ -44,16 +56,17 @@ struct InactiveSessionCard: View {
         .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .onTapGesture(perform: action)
-        .overlay(alignment: .topTrailing) {
-            Button(action: configureAction) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(12)
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Configure session timer")
+    }
+
+    private var configureButton: some View {
+        Button(action: configureAction) {
+            Image(systemName: "gearshape")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(12)
+                .contentShape(Circle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Configure session timer")
     }
 }
