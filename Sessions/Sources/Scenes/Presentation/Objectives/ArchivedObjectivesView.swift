@@ -5,7 +5,11 @@ struct ArchivedObjectivesView: View {
     let onClose: () -> Void
     let onSelect: (Objective) -> Void
 
-    init(viewModel: ArchivedObjectivesViewModel, onClose: @escaping () -> Void, onSelect: @escaping (Objective) -> Void) {
+    init(
+        viewModel: ArchivedObjectivesViewModel,
+        onClose: @escaping () -> Void,
+        onSelect: @escaping (Objective) -> Void
+    ) {
         self.viewModel = viewModel
         self.onClose = onClose
         self.onSelect = onSelect

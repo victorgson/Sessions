@@ -21,7 +21,6 @@ struct InsightsViewModel {
 }
 
 extension InsightsViewModel {
-    // swiftlint:disable function_body_length
     func makeInsights(calendar: Calendar = .current, referenceDate: Date = Date()) -> SessionInsights {
         let totalSessions = activities.count
         let totalDuration = activities.reduce(0) { $0 + $1.duration }
@@ -61,10 +60,21 @@ extension InsightsViewModel {
             consistentFocusHour: focusStats.consistent
         )
     }
-    // swiftlint:enable function_body_length
 }
 
 private extension InsightsViewModel {
+    struct ObjectiveStatsSummary {
+        let focusObjective: SessionInsights.ObjectiveStat?
+        let topObjectives: [SessionInsights.ObjectiveStat]
+        let unassignedSessions: SessionInsights.UnassignedStat?
+    }
+
+    struct WeeklyStatsSummary {
+        let stats: [SessionInsights.WeekdayStat]
+        let totalDuration: TimeInterval
+        let sessionCount: Int
+    }
+
     func groupActivitiesByDay(calendar: Calendar) -> [Date: [Activity]] {
         Dictionary(grouping: activities) { calendar.startOfDay(for: $0.date) }
     }
@@ -86,11 +96,7 @@ private extension InsightsViewModel {
 
     func makeObjectiveStats(
         totalTrackedDuration: TimeInterval
-    ) -> (
-        focusObjective: SessionInsights.ObjectiveStat?,
-        topObjectives: [SessionInsights.ObjectiveStat],
-        unassignedSessions: SessionInsights.UnassignedStat?
-    ) {
+    ) -> ObjectiveStatsSummary {
         let objectivesByID = Dictionary(uniqueKeysWithValues: objectives.map { ($0.id, $0) })
         var aggregatedByObjective: [UUID: (duration: TimeInterval, count: Int)] = [:]
         var unassignedAggregation: (duration: TimeInterval, count: Int) = (0, 0)
@@ -132,7 +138,7 @@ private extension InsightsViewModel {
             unassignedSessions = nil
         }
 
-        return (
+        return ObjectiveStatsSummary(
             focusObjective: objectiveStats.first,
             topObjectives: Array(objectiveStats.prefix(3)),
             unassignedSessions: unassignedSessions
@@ -143,11 +149,7 @@ private extension InsightsViewModel {
         activitiesByDay: [Date: [Activity]],
         calendar: Calendar,
         referenceDate: Date
-    ) -> (
-        stats: [SessionInsights.WeekdayStat],
-        totalDuration: TimeInterval,
-        sessionCount: Int
-    ) {
+    ) -> WeeklyStatsSummary {
         let today = calendar.startOfDay(for: referenceDate)
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -176,7 +178,7 @@ private extension InsightsViewModel {
             )
         }
 
-        return (
+        return WeeklyStatsSummary(
             stats: sevenDayStats,
             totalDuration: sevenDayDuration,
             sessionCount: sevenDaySessions
