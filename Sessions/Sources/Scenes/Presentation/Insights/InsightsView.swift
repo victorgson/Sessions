@@ -25,11 +25,7 @@ struct InsightsView: View {
     }
 
     private var insights: SessionInsights {
-        SessionInsights(
-            activities: viewModel.activities,
-            objectives: viewModel.objectives,
-            calendar: calendar
-        )
+        viewModel.makeInsights(calendar: calendar)
     }
 
     var body: some View {
@@ -38,6 +34,7 @@ struct InsightsView: View {
             VStack(spacing: 24) {
                 summaryCard(for: insights)
                 metricsGrid(for: insights)
+                focusHoursCard(for: insights)
                 if let focus = insights.focusObjective {
                     focusObjectiveCard(for: focus)
                 }
@@ -161,6 +158,79 @@ private extension InsightsView {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(height: Layout.metricCardHeight, alignment: .topLeading)
+    }
+}
+
+// MARK: - Focus Hours
+private extension InsightsView {
+    @ViewBuilder
+    func focusHoursCard(for insights: SessionInsights) -> some View {
+        card {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Focus Hours")
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+
+                if insights.focusHourStats.isEmpty {
+                    Text("Log sessions to reveal when you tend to get the most focus.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    if let consistentHour = insights.consistentFocusHour {
+                        Text("You're most consistent around \(hourWindowDescription(for: consistentHour.hour)).")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        let shareText = consistentHour.percentageOfSessions.formatted(
+                            .percent.precision(.fractionLength(0))
+                        )
+                        Text("\(shareText) of sessions happen during this hour.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Keep tracking to uncover a consistent focus window.")
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+                    }
+
+                    let maxDuration = insights.focusHourStats.map(\.totalDuration).max() ?? 0
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(Array(insights.focusHourStats.prefix(3))) { stat in
+                            focusHourRow(for: stat, maxDuration: maxDuration)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    func focusHourRow(for stat: SessionInsights.FocusHourStat, maxDuration: TimeInterval) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(hourWindowDescription(for: stat.hour))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 12)
+                let durationText = viewModel.formattedDuration(stat.totalDuration)
+                let sessionText = stat.sessionCount == 1 ? "session" : "sessions"
+                Text("\(durationText) • \(stat.sessionCount) \(sessionText)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            let ratio = maxDuration > 0 ? stat.totalDuration / maxDuration : 0
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule(style: .continuous)
+                        .fill(Color(.systemFill))
+                    Capsule(style: .continuous)
+                        .fill(Color.accentColor.opacity(0.85))
+                        .frame(width: max(12, geometry.size.width * ratio))
+                }
+            }
+            .frame(height: 8)
+            .animation(.easeOut(duration: 0.3), value: ratio)
+        }
     }
 }
 
@@ -378,6 +448,26 @@ private extension InsightsView {
         formatter.locale = .autoupdatingCurrent
         formatter.setLocalizedDateFormatFromTemplate("MMM d")
         return "\(formatter.string(from: startDate)) – \(formatter.string(from: startOfToday))"
+    }
+
+    func hourWindowDescription(for hour: Int) -> String {
+        let startOfToday = calendar.startOfDay(for: Date())
+        guard let start = calendar.date(
+            bySettingHour: hour,
+            minute: 0,
+            second: 0,
+            of: startOfToday
+        ),
+        let end = calendar.date(byAdding: .hour, value: 1, to: start) else {
+            let endHour = (hour + 1) % 24
+            return String(format: "%02d:00 – %02d:00", hour, endHour)
+        }
+
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .autoupdatingCurrent
+        formatter.dateFormat = "h a"
+        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
     }
 
     @ViewBuilder
