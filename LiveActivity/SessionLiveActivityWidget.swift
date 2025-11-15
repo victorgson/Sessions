@@ -1,4 +1,3 @@
-#if canImport(ActivityKit)
 import ActivityKit
 import SwiftUI
 import WidgetKit
@@ -9,7 +8,6 @@ struct SessionLiveActivityWidget: Widget {
             SessionLiveActivityLockScreenView(state: context.state)
                 .activityBackgroundTint(.clear)
                 .activitySystemActionForegroundColor(.white)
-//                .contentMarginsDisabled()
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
@@ -17,17 +15,15 @@ struct SessionLiveActivityWidget: Widget {
                 }
             } compactLeading: {
                 SessionLiveActivityElapsedLabel(state: context.state)
-                    .font(.system(.title3, design: .rounded))
-                    .fontWeight(.semibold)
             } compactTrailing: {
                 Image(systemName: "timer")
                     .foregroundStyle(.white)
             } minimal: {
                 SessionLiveActivityElapsedLabel(state: context.state)
-                    .font(.system(.caption, design: .rounded))
-                    .fontWeight(.semibold)
             }
+            .keylineTint(.white)
         }
+
     }
 }
 
@@ -36,10 +32,6 @@ private struct SessionLiveActivityLockScreenView: View {
 
     var body: some View {
         SessionLiveActivityCard(state: state)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(for: .widget) {
-                Color.clear
-            }
     }
 }
 
@@ -48,8 +40,6 @@ private struct SessionLiveActivityExpandedView: View {
 
     var body: some View {
         SessionLiveActivityCard(state: state)
-            .padding(.horizontal)
-            .padding(.vertical, 12)
     }
 }
 
@@ -57,7 +47,7 @@ private struct SessionLiveActivityCard: View {
     let state: SessionLiveActivityAttributes.ContentState
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             VStack(spacing: 8) {
                 Text(state.title)
                     .font(.subheadline.weight(.semibold))
@@ -74,19 +64,7 @@ private struct SessionLiveActivityCard: View {
             }
             .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 28)
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(TimelinePalette.sessionGradient)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                )
-        )
-        .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 8)
+        .padding(.vertical, 16)
     }
 }
 
@@ -120,4 +98,3 @@ private struct LiveActivityTimerLabel: View {
         detail: "Pomodoro • 25m focus, 5m break"
     )
 }
-#endif

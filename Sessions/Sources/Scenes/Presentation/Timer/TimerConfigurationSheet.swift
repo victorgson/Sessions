@@ -4,7 +4,7 @@ struct TimerConfigurationSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable private var viewModel: TimerConfigurationSheetViewModel
 
-    private let focusPresets = [5, 10, 15, 20, 25, 30, 35, 45]
+    private let focusPresets = [15, 20, 25, 30, 40, 50, 60, 90]
     private let breakPresets = [3, 5, 10, 15]
 
     init(viewModel: TimerConfigurationSheetViewModel) {
