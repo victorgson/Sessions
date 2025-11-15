@@ -58,29 +58,24 @@ struct ActivityLinkSheet: View {
                             .sheetInputFieldBackground()
                     }
 
-                    SheetCardContainer {
-                        VStack(spacing: 12) {
-                            Button {
-                                coordinator.saveDraft()
-                            } label: {
-                                Text("Save Session")
-                            }
-                            .timelineStyle(.primary)
-
-                            Button(role: .destructive) {
-                                coordinator.discardDraft()
-                            } label: {
-                                Text("Discard")
-                            }
-                            .timelineStyle(.destructive)
-                        }
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 24)
             }
             .navigationTitle("Link Session")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        coordinator.discardDraft()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        coordinator.saveDraft()
+                    }
+                }
+            }
         }
         .onChange(of: viewModel.selectedObjectiveID) { _, newValue in
             let quantityDefaults = coordinator.selectObjective(newValue)

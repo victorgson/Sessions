@@ -3,11 +3,18 @@ import Observation
 import Tracking
 
 struct SessionTrackerView: View {
-    @EnvironmentObject private var coordinator: AppCoordinator
     @State private var viewModel: SessionTrackerViewModel
+    private let coordinator: AppCoordinator
+    private let sessionCoordinator: SessionTrackerCoordinator
     private let calendar = Calendar.current
-    init(viewModel: SessionTrackerViewModel) {
+    init(
+        viewModel: SessionTrackerViewModel,
+        coordinator: AppCoordinator,
+        sessionCoordinator: SessionTrackerCoordinator
+    ) {
         _viewModel = State(initialValue: viewModel)
+        self.coordinator = coordinator
+        self.sessionCoordinator = sessionCoordinator
     }
 
     var body: some View {
@@ -31,7 +38,7 @@ struct SessionTrackerView: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
-                    coordinator.showInsights()
+                    coordinator.push(.insights)
                     bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .openInsights))
                 } label: {
                     Label("Insights", systemImage: "chart.bar.fill")
@@ -40,7 +47,7 @@ struct SessionTrackerView: View {
                 .accessibilityLabel("Insights")
 
                 Button {
-                    coordinator.presentSettings()
+                    sessionCoordinator.present(.settings)
                     bindableViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .openSettings))
                 } label: {
                     Label("Settings", systemImage: "gearshape")
@@ -58,19 +65,19 @@ struct SessionTrackerView: View {
             bindableViewModel.markInitialPaywallPresentedIfNeeded()
             bindableViewModel.trackPageView()
             if bindableViewModel.activityDraft != nil {
-                coordinator.presentActivityLinkSheetIfNeeded()
+                sessionCoordinator.present(.activityLinkDraft)
             }
         }
         .onChange(of: timerViewModel.isTimerRunning) { _, running in
             if !running {
-                coordinator.dismissSessionDetail()
+                coordinator.pop(.sessionDetail)
             }
         }
         .onChange(of: bindableViewModel.activityDraft != nil) { _, hasDraft in
             if hasDraft {
-                coordinator.presentActivityLinkSheetIfNeeded()
+                sessionCoordinator.present(.activityLinkDraft)
             } else {
-                coordinator.dismissActivityLinkSheetIfNeeded()
+                sessionCoordinator.dismiss(.activityLink)
             }
         }
     }
@@ -91,7 +98,7 @@ struct SessionTrackerView: View {
                         viewModel.trackAction(
                             TrackingEvent.SessionTracker.Action(value: .showArchivedObjectives)
                         )
-                        coordinator.presentArchivedObjectives()
+                        sessionCoordinator.present(.archivedObjectives)
                     } label: {
                         Label("Archived", systemImage: "archivebox")
                             .labelStyle(TrailingIconLabelStyle())
@@ -110,7 +117,7 @@ struct SessionTrackerView: View {
                     viewModel.trackAction(
                         TrackingEvent.SessionTracker.Action(value: .showAddObjective(.emptyState))
                     )
-                    coordinator.presentAddObjectiveSheet(viewModel: AddObjectiveSheetViewModel())
+                    sessionCoordinator.present(.addObjective(AddObjectiveSheetViewModel()))
                 }
                 .padding(.horizontal, 20)
             } else {
@@ -120,16 +127,16 @@ struct SessionTrackerView: View {
                         viewModel.trackAction(
                             TrackingEvent.SessionTracker.Action(value: .showAddObjective(.activeObjectives))
                         )
-                        coordinator.presentAddObjectiveSheet(viewModel: AddObjectiveSheetViewModel())
+                        sessionCoordinator.present(.addObjective(AddObjectiveSheetViewModel()))
                     },
                     onSelectObjective: { objective in
                         viewModel.trackAction(
                             TrackingEvent.SessionTracker.Action(value: .editObjective(id: objective.id))
                         )
-                        coordinator.presentAddObjectiveSheet(viewModel: AddObjectiveSheetViewModel(
+                        sessionCoordinator.present(.addObjective(AddObjectiveSheetViewModel(
                             mode: .edit(objective),
                             defaultColor: ObjectiveColorProvider.color(for: objective)
-                        ))
+                        )))
                     }
                 )
             }
@@ -229,15 +236,15 @@ private extension SessionTrackerView {
         Section {
             SessionTimerView(viewModel: timerViewModel) {
                 timerViewModel.startSession()
-                coordinator.showSessionDetail()
+                coordinator.push(.sessionDetail)
                 baseViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showFullScreenTimer))
             } onConfigure: {
-                coordinator.presentTimerConfiguration()
+                sessionCoordinator.present(.timerConfiguration)
             }
             .contentShape(Rectangle())
             .onTapGesture {
                 if timerViewModel.isTimerRunning {
-                    coordinator.showSessionDetail()
+                    coordinator.push(.sessionDetail)
                     baseViewModel.trackAction(TrackingEvent.SessionTracker.Action(value: .showFullScreenTimer))
                 }
             }

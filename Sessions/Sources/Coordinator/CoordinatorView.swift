@@ -2,46 +2,45 @@ import SwiftUI
 
 struct CoordinatorView: View {
     @ObservedObject private var coordinator: AppCoordinator
-    private let sessionTrackerViewModel: SessionTrackerViewModel
+    @ObservedObject private var sessionTrackerCoordinator: SessionTrackerCoordinator
 
     init(
         coordinator: AppCoordinator,
-        sessionTrackerViewModel: SessionTrackerViewModel
+        sessionTrackerCoordinator: SessionTrackerCoordinator
     ) {
         self.coordinator = coordinator
-        self.sessionTrackerViewModel = sessionTrackerViewModel
+        self.sessionTrackerCoordinator = sessionTrackerCoordinator
     }
 
     var body: some View {
         NavigationStack(path: pathBinding) {
-            SessionTrackerView(viewModel: sessionTrackerViewModel)
-                .environmentObject(coordinator)
-                .navigationDestination(for: AppRoute.self) { route in
-                    coordinator.destination(for: route)
+            sessionTrackerCoordinator.buildMain(appCoordinator: coordinator)
+            .sheet(
+                item: sessionSheetBinding,
+                onDismiss: {
+                    sessionTrackerCoordinator.handleSheetDismissed()
+                },
+                content: { sheet in
+                    sessionTrackerCoordinator.build(sheet: sheet)
+                }
+            )
+                .navigationDestination(for: AppPage.self) { page in
+                    coordinator.build(page: page)
                 }
         }
-        .sheet(
-            item: sheetBinding,
-            onDismiss: {
-                coordinator.handleSheetDismissed()
-            },
-            content: { sheet in
-                coordinator.sheetView(for: sheet)
-            }
-        )
     }
 
-    private var pathBinding: Binding<[AppRoute]> {
+    private var pathBinding: Binding<[AppPage]> {
         Binding(
             get: { coordinator.path },
             set: { coordinator.path = $0 }
         )
     }
 
-    private var sheetBinding: Binding<AppSheet?> {
+    private var sessionSheetBinding: Binding<SessionTrackerSheet?> {
         Binding(
-            get: { coordinator.sheet },
-            set: { coordinator.sheet = $0 }
+            get: { sessionTrackerCoordinator.sheet },
+            set: { sessionTrackerCoordinator.sheet = $0 }
         )
     }
 }

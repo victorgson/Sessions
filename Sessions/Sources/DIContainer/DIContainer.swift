@@ -120,4 +120,18 @@ extension Container {
         }
         .singleton
     }
+
+    var sessionTrackerCoordinator: Factory<SessionTrackerCoordinator> {
+        Factory(self) { @MainActor in
+            SessionTrackerCoordinator(sessionTrackerViewModel: self.sessionTrackerViewModel())
+        }
+        .singleton
+    }
+
+    var appCoordinator: Factory<AppCoordinator> {
+        Factory(self) { @MainActor in
+            AppCoordinator(sessionTrackerCoordinator: self.sessionTrackerCoordinator())
+        }
+        .singleton
+    }
 }

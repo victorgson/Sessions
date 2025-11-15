@@ -8,6 +8,7 @@ import FactoryKit
 struct SessionsApp: App {
     @State private var sessionTrackerViewModel: SessionTrackerViewModel
     @StateObject private var coordinator: AppCoordinator
+    @StateObject private var sessionTrackerCoordinator: SessionTrackerCoordinator
 
     init() {
         FirebaseApp.configure()
@@ -21,15 +22,17 @@ struct SessionsApp: App {
 
         let container = Container.shared
         let trackerViewModel = container.sessionTrackerViewModel()
+        let trackerCoordinator = container.sessionTrackerCoordinator()
         _sessionTrackerViewModel = State(initialValue: trackerViewModel)
-        _coordinator = StateObject(wrappedValue: AppCoordinator(sessionTrackerViewModel: trackerViewModel))
+        _sessionTrackerCoordinator = StateObject(wrappedValue: trackerCoordinator)
+        _coordinator = StateObject(wrappedValue: container.appCoordinator())
     }
 
     var body: some Scene {
         WindowGroup {
             CoordinatorView(
                 coordinator: coordinator,
-                sessionTrackerViewModel: sessionTrackerViewModel
+                sessionTrackerCoordinator: sessionTrackerCoordinator
             )
         }
     }
