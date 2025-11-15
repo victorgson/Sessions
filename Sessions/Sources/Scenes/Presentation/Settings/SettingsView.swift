@@ -31,7 +31,6 @@ struct SettingsView: View {
                 }
                 #endif
             }
-            .listStyle(.insetGrouped)
             .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

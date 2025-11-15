@@ -13,37 +13,39 @@ struct TimerConfigurationSheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section("Mode") {
-                    Picker("Mode", selection: modeSelectionBinding) {
-                        ForEach(TimerModeSelection.allCases) { mode in
-                            Text(mode.title).tag(mode)
+            ScrollView {
+                VStack {
+                    Section("Mode") {
+                        Picker("Mode", selection: modeSelectionBinding) {
+                            ForEach(TimerModeSelection.allCases) { mode in
+                                Text(mode.title).tag(mode)
+                            }
                         }
-                    }
-                    .pickerStyle(.segmented)
-                }
-
-                if case .pomodoro = viewModel.configuration.mode {
-                    Section("Focus Length") {
-                        Text("Choose how long each work block should run.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        presetsGrid(presets: focusPresets, selected: currentFocusMinutes) { minutes in
-                            updateFocusMinutes(minutes)
-                        }
+                        .pickerStyle(.segmented)
                     }
 
-                    Section("Break Length") {
-                        Text("Pick how long your quick reset should be.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        presetsGrid(presets: breakPresets, selected: currentBreakMinutes) { minutes in
-                            updateBreakMinutes(minutes)
+                    if case .pomodoro = viewModel.configuration.mode {
+                        Section("Focus Length") {
+                            Text("Choose how long each work block should run.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            presetsGrid(presets: focusPresets, selected: currentFocusMinutes) { minutes in
+                                updateFocusMinutes(minutes)
+                            }
+                        }
+
+                        Section("Break Length") {
+                            Text("Pick how long your quick reset should be.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            presetsGrid(presets: breakPresets, selected: currentBreakMinutes) { minutes in
+                                updateBreakMinutes(minutes)
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 16)
             }
-            .listStyle(.insetGrouped)
             .navigationTitle("Timer Settings")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
