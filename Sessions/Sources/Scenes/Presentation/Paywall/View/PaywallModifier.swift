@@ -22,17 +22,23 @@ struct PaywallIfNeededModifier: ViewModifier {
 }
 
 extension View {
+    @ViewBuilder
     func paywallIfNeeded(
         entitlement: String = "Sessions Pro",
+        shouldPresent: Bool = true,
         onPurchaseCompleted: ((CustomerInfo) -> Void)? = nil,
         onRestoreCompleted: ((CustomerInfo) -> Void)? = nil
     ) -> some View {
-        self.modifier(
-            PaywallIfNeededModifier(
-                requiredEntitlementIdentifier: entitlement,
-                onPurchaseCompleted: onPurchaseCompleted,
-                onRestoreCompleted: onRestoreCompleted
+        if shouldPresent {
+            self.modifier(
+                PaywallIfNeededModifier(
+                    requiredEntitlementIdentifier: entitlement,
+                    onPurchaseCompleted: onPurchaseCompleted,
+                    onRestoreCompleted: onRestoreCompleted
+                )
             )
-        )
+        } else {
+            self
+        }
     }
 }

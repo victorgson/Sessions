@@ -19,7 +19,10 @@ final class SessionTrackerViewModel {
     let liveActivityController: SessionLiveActivityControlling
     let subscriptionStatusProvider: SubscriptionStatusProviding
     let timerConfigurationStore: SessionTimerConfigurationStoring
+    private let userDefaults: UserDefaults
+    private static let initialPaywallDefaultsKey = "hasPresentedInitialPaywall"
     var activityDraft: ActivityDraft?
+    private(set) var shouldPresentInitialPaywall: Bool
 
     @ObservationIgnored private var cachedObjectivesViewModel: ObjectivesOverviewViewModel?
     @ObservationIgnored private var cachedTimerViewModel: SessionTimerViewModel?
@@ -239,7 +242,8 @@ final class SessionTrackerViewModel {
         hapticBox: HapticBox,
         liveActivityController: SessionLiveActivityControlling,
         subscriptionStatusProvider: SubscriptionStatusProviding,
-        timerConfigurationStore: SessionTimerConfigurationStoring
+        timerConfigurationStore: SessionTimerConfigurationStoring,
+        userDefaults: UserDefaults = .standard
     ) {
         self.loadObjectivesUseCase = loadObjectivesUseCase
         self.loadActivitiesUseCase = loadActivitiesUseCase
@@ -255,9 +259,20 @@ final class SessionTrackerViewModel {
         self.liveActivityController = liveActivityController
         self.subscriptionStatusProvider = subscriptionStatusProvider
         self.timerConfigurationStore = timerConfigurationStore
+        self.userDefaults = userDefaults
+        self.shouldPresentInitialPaywall = !userDefaults.bool(
+            forKey: Self.initialPaywallDefaultsKey
+        )
 
         Task {
             await loadInitialData()
+        }
+    }
+
+    func markInitialPaywallPresentedIfNeeded() {
+        guard shouldPresentInitialPaywall else { return }
+        if !userDefaults.bool(forKey: Self.initialPaywallDefaultsKey) {
+            userDefaults.set(true, forKey: Self.initialPaywallDefaultsKey)
         }
     }
 }

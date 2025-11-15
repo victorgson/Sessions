@@ -68,10 +68,12 @@ struct SessionTrackerView: View {
             }
         }
         .paywallIfNeeded(
+            shouldPresent: bindableViewModel.shouldPresentInitialPaywall,
             onPurchaseCompleted: { _ in refreshSubscriptionStatus() },
             onRestoreCompleted: { _ in refreshSubscriptionStatus() }
         )
         .onAppear {
+            bindableViewModel.markInitialPaywallPresentedIfNeeded()
             bindableViewModel.trackPageView()
         }
         .sheet(isPresented: $isShowingSettings) {
