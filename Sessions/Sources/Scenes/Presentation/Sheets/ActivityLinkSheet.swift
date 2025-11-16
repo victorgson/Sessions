@@ -17,7 +17,7 @@ struct ActivityLinkSheet: View {
 
     var body: some View {
         @Bindable var bindableViewModel = viewModel
-        let selectedObjective = objective(for: bindableViewModel.selectedObjectiveID)
+        let selectedObjective = coordinator.objective(withID: bindableViewModel.selectedObjectiveID)
 
         NavigationStack {
             ScrollView {
@@ -30,7 +30,7 @@ struct ActivityLinkSheet: View {
                                 Text("None")
                                     .tag(UUID?.none)
                                 ForEach(coordinator.objectives) { objective in
-                                    Text(objective.title)
+                                    Text(displayName(for: objective))
                                         .tag(UUID?.some(objective.id))
                                 }
                             } label: {
@@ -163,7 +163,7 @@ struct ActivityLinkSheet: View {
 
     private func objectivePickerLabel(for objective: Objective?) -> some View {
         HStack {
-            Text(objective?.title ?? "None")
+            Text(displayName(for: objective))
                 .foregroundStyle(.primary)
             Spacer()
             Image(systemName: "chevron.up.chevron.down")
@@ -173,9 +173,12 @@ struct ActivityLinkSheet: View {
         .sheetInputFieldBackground()
     }
 
-    private func objective(for id: UUID?) -> Objective? {
-        guard let id else { return nil }
-        return coordinator.objectives.first(where: { $0.id == id })
+    private func displayName(for objective: Objective?) -> String {
+        guard let objective else { return "None" }
+        if objective.isArchived {
+            return "\(objective.title) (Completed)"
+        }
+        return objective.title
     }
 
     private func timeDescription(for metric: KeyResult.TimeMetric) -> String {

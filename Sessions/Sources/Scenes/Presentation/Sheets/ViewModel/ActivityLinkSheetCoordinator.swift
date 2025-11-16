@@ -15,7 +15,18 @@ final class ActivityLinkSheetCoordinator {
     }
 
     var objectives: [Objective] {
-        sessionTrackerViewModel.objectivesViewModel.activeObjectives
+        var objectives = sessionTrackerViewModel.objectivesViewModel.activeObjectives
+        if let selectedID = draft?.selectedObjectiveID,
+           let selectedObjective = sessionTrackerViewModel.objectivesViewModel.objective(withID: selectedID),
+           !objectives.contains(where: { $0.id == selectedID }) {
+            objectives.append(selectedObjective)
+        }
+        return objectives
+    }
+
+    func objective(withID id: UUID?) -> Objective? {
+        guard let id else { return nil }
+        return sessionTrackerViewModel.objectivesViewModel.objective(withID: id)
     }
 
     func selectObjective(_ objectiveID: UUID?) -> [UUID: Double] {
